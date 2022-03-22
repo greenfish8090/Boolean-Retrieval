@@ -12,8 +12,8 @@ class InvertedIndex:
         self.save = save
         self.name = name
         self.id_to_file = {}
-        self.index = defaultdict(lambda: {'count': [], 'words': set()}) # stemmed index
-        self.windex = defaultdict(lambda: {'count': [], 'postings': set(), 'rotations':set()}) # word index
+        self.index = defaultdict(lambda: {'count': 0, 'words': set()}) # stemmed index
+        self.windex = defaultdict(lambda: {'count': 0, 'postings': set(), 'rotations':set()}) # word index
         self.tgi = defaultdict(lambda: set())
         self.construct()
         self.construct_tgi()
