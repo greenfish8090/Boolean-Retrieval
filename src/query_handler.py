@@ -5,11 +5,20 @@ import numpy as np
 from inverted_index import InvertedIndex
 
 class QueryHandler:
+    """
+    This class is used to handle the given string query.
+    """
     def __init__(self, stemmer: Callable) -> None:
+        """
+        Function Constructor
+        """
         self.symbols = {}
         self.stemmer = stemmer
     
     def rotate(self, wildcard: str) -> tuple[str, bool]:
+        """
+        Function to rotate the string query. 
+        """
         term = '$' + wildcard
         for i, l in enumerate(term, 1):
             if l == "*":
@@ -18,19 +27,31 @@ class QueryHandler:
             return wildcard, False
         
     def union(self, p1: list, p2: list) -> list:
+        """
+        Method to find the OR of the two lists p1 and p2.
+        """
         res = set()
         res = (set(p1) | set(p2))
         return list(res)
 
     def inverse(self, p1:list, total:list) -> list:
+        """
+        Method to find the NOT of the given list p1. 
+        """
         return [i for i in total if i not in p1]
     
     def intersection(self, p1: list, p2: list) -> list:
+        """
+        Method to find the AND of the two lists p1 and p2.
+        """        
         res = set()
         res = (set(p1) & set(p2))
         return list(res)
     
     def and_not(self, p1: list, p2: list) -> list:
+        """
+        Method to find p1 AND NOT p2.
+        """
         i = j = 0
         res = []
 
@@ -48,10 +69,16 @@ class QueryHandler:
 
         return res
     
-    def or_not(self, p1: list, p2: list, total: list) -> list:    
+    def or_not(self, p1: list, p2: list, total: list) -> list:
+        """
+        Method to find p1 OR NOT p2.
+        """     
         return self.union(p1, self.inverse(p2, total))
     
     def levenshtein_distance(self, word1: str, word2: str) -> int:
+        """
+        Method to calculate the edit distance between word1 and word2.
+        """
         m = np.zeros((len(word1)+1, len(word2)+1))
         for j in range(len(word1)+1):
             m[0][j] = j
@@ -67,6 +94,9 @@ class QueryHandler:
         return int(m[len(word1), len(word2)])
     
     def spell_correct(self, misspelled: str, ii: InvertedIndex) -> str:
+        """
+        Method to get corrected spelling for a misspelled query word.
+        """
         twograms = []
         for i in range(len(misspelled) - 1):
             twograms += ii.tgi[misspelled[i:i+2]]
@@ -98,6 +128,9 @@ class QueryHandler:
         
     
     def match(self, term: str, ii: InvertedIndex) -> list:
+        """
+        @Pranav Balaji
+        """
         if term[0] == '@':
             return self.symbols[term]
         res = []
@@ -129,6 +162,9 @@ class QueryHandler:
         return list(res)
     
     def evaluate_expr(self, expr: str, i: int, ii: InvertedIndex) -> str:
+        """
+        Method to evaluate boolean expression and output result of the query.
+        """
         # print("evaluating " + expr + " and storing as @" + str(i))
         # Possibilities are:
         # var or not var
@@ -170,6 +206,10 @@ class QueryHandler:
                     return new_symbol
             
     def compute(self, query: str, ii: InvertedIndex) -> list:
+        """
+        Method to evaluate precedence of brackets implemented using stacks.
+        @Pranav Balaji
+        """
         stack = []
         self.symbols = {}
         i = 0

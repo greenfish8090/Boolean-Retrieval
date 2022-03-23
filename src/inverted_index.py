@@ -6,12 +6,30 @@ import numpy as np
 from nltk.tokenize import sent_tokenize, word_tokenize
 
 class InvertedIndex:
-    def __init__(self, directory: str, stopwords: list, stemmer: Callable, save: bool = True, name: str = 'ii') -> None:
+    """A class to make the inverted index.
+    
+    Attributes
+    ----------
+        directory   : path to the dataset directory
+        stopwords   : set of stopwords
+        stemmer     : stemming function
+
+    """
+
+        def __init__(self, directory: str, stopwords: list, stemmer: Callable, save: bool = True, name: str = 'ii') -> None:
+        """Class constructor.
+
+        Args
+        ----
+            directory   : path to the dataset directory
+            stopwords   : set of stopwords
+            stemmer     : stemming function
+
+        """
+
         self.directory = directory
         self.stopwords = stopwords
         self.stemmer = stemmer
-        self.save = save
-        self.name = name
         self.id_to_file = {}
         self.index = defaultdict(lambda: {'count': 0, 'words': set()}) # stemmed index
         self.windex = defaultdict(lambda: {'count': 0, 'postings': set(), 'rotations':set()}) # word index
@@ -20,6 +38,18 @@ class InvertedIndex:
         self.construct_tgi()
         
     def produce_rotations(self, word: str) -> list:
+        """Method to generate all rotations of a word.
+
+        Args
+        ----
+            word    : word to make generate rotations for
+
+        Returns
+        -------
+            res     : a list of all word rotations
+
+        """
+
         term = "$" + word
         res = [term]
         for i in range(len(word) - 1):
@@ -28,6 +58,11 @@ class InvertedIndex:
         return res
     
     def construct(self) -> None:
+        """
+        Method to construct the inverted index.
+
+        """
+
         for i, filename in enumerate(os.listdir(self.directory)):
             self.id_to_file[i] = filename
             with open(os.path.join(self.directory, filename), 'rt') as original:
@@ -52,6 +87,11 @@ class InvertedIndex:
             self.index[t]['count'] = len(postings)
 
     def construct_tgi(self) -> None:
+        """
+        Method to construct two-gram index.
+
+        """
+        
         for i in self.index.keys():
             for j in self.index[i]['words']:
                 for k in range(len(j) - 1):
