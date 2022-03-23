@@ -14,8 +14,8 @@ From root directory type `py3 src`<br>
 #### Query Format
 Valid boolean operators are AND, OR and NOT and are not case sensitive. Every two operands should be enclosed in parentheses. <br>
 ```
-(Brutus and Calpurnia) or Anthony <br>
-(Brutus OR Calpurnia) OR NOT Anthony <br>
+(Brutus and Calpurnia) or Anthony
+(Brutus OR Calpurnia) OR NOT Anthony
 ```
 #### Wildcard Queries
 Single wildcard queries are supported. <br>
