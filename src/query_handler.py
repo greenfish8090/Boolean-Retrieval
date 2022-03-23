@@ -9,6 +9,8 @@ class QueryHandler:
 
     Attributes
     ----------
+        stemmer     : stemming function
+        ii          : inverted index
 
     """
     def __init__(self, stemmer: Callable, ii) -> None:
@@ -21,7 +23,8 @@ class QueryHandler:
     
     def rotate(self, wildcard: str) -> tuple[str, bool]:
         """
-        Function to rotate the string query. 
+        Function to rotate the string containing the wildcard until the '*' is at the end. If the input has no wildcard, it is returned
+        as it is. A flag has_wild is also returned, which tells if the input had a wildcard.
 
         Args
         ---- 
@@ -29,7 +32,7 @@ class QueryHandler:
         
         Returns
         -------
-
+           The rotated wildcard with the '*' at the end and the flag
         """
         term = '$' + wildcard
         for i, l in enumerate(term, 1):
@@ -49,7 +52,7 @@ class QueryHandler:
 
         Returns
         ------- 
-            res : list cotaining the OR of lists p1 and p2
+            List cotaining the OR of lists p1 and p2
         """
         res = set()
         res = (set(p1) | set(p2))
@@ -62,11 +65,10 @@ class QueryHandler:
         Args
         ---- 
             p1      : posting list to be inverted
-            total   : the number of documents in corpus
 
         Returns
         -------
-
+            Inverse of p1 with global set being the set of all documents
         """
         return [i for i in list(self.ii.id_to_file.keys()) if i not in p1]
     
@@ -81,7 +83,7 @@ class QueryHandler:
 
         Returns
         -------
-            res : List containing the AND of p1 and p2
+            List containing the AND of p1 and p2
         """
         res = set()
         res = (set(p1) & set(p2))
@@ -98,7 +100,7 @@ class QueryHandler:
 
         Returns
         -------
-            res : list cotaining the result 'p1 AND NOT p2'
+            List containing the result 'p1 AND NOT p2'
         """
         i = j = 0
         res = []
@@ -125,11 +127,10 @@ class QueryHandler:
         ---- 
             p1      : First posting list
             p2      : Second posting list
-            total   : the number of documents in corpus
 
         Returns
         -------
-
+            list containing the result 'p1 OR NOT p2'
         """    
         return self.union(p1, self.inverse(p2))
     
@@ -144,7 +145,7 @@ class QueryHandler:
 
         Returns
         -------
-
+            Levenshtein distance between the two words
         """
         m = np.zeros((len(word1)+1, len(word2)+1))
         for j in range(len(word2)+1):
@@ -167,11 +168,10 @@ class QueryHandler:
         Args
         ----
             misspelled  : string query term entered by user
-            ii          : inverted index
 
         Returns
         -------
-
+            The most probable correct spelling
         """
         twograms = []
         for i in range(len(misspelled) - 1):
@@ -205,7 +205,15 @@ class QueryHandler:
     
     def match(self, term: str) -> list:
         """
-        @Pranav Balaji
+        Gets the list of documents which have a particular term
+
+        Args
+        ----
+            term  : the term optionally containing wildcard
+
+        Returns
+        -------
+            The matching list of documents
         """
         if term[0] == '@':
             return self.symbols[term]
@@ -213,13 +221,16 @@ class QueryHandler:
         rotated, is_wild = self.rotate(term)
         #print(rotated)
         if is_wild: # is a wildcard
+            matches = set()
             for i in self.ii.index.keys():
                 for w in self.ii.index[i]['words']:
                     if len(w) >= len(term)-1:
                         for r in self.ii.windex[w]['rotations']:
                             if r[:len(rotated)] == rotated:
                                 res = self.union(res, self.ii.windex[w]['postings'])
+                                matches.add(w)
                                 break
+            print(term + " has been matched to " + ", ".join(matches))
         else: # not a wildcard
             rotated = self.stemmer(rotated)
             for i in self.ii.index.keys():
@@ -239,17 +250,16 @@ class QueryHandler:
     
     def evaluate_expr(self, expr: str, i: int) -> str:
         """
-        Method to evaluate boolean expression and output result of the query.
+        Method to evaluate boolean expression and store the output in a new index of the symbol table
 
         Args
         ----
-            expr    : given boolean expression to be evaluated
-            i       : 
-            ii      : inverted index 
+            expr    : given elementary boolean expression to be evaluated
+            i       : the new index for the symbol table
 
         Returns
         -------
-
+            The index in the symbol table which has the result of the expression
         """
         # print("evaluating " + expr + " and storing as @" + str(i))
         # Possibilities are:
@@ -293,16 +303,15 @@ class QueryHandler:
             
     def compute(self, query: str) -> list:
         """
-        Method to evaluate precedence of brackets implemented using stacks.
+        Method to evaluate an entire query using a stack
 
         Args
         ----
             query   : input string query
-            ii      : inverted index
 
         Returns
         -------
-
+            List of matching documents
         """
         stack = []
         self.symbols = {}
