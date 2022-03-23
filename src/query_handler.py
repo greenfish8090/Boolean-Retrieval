@@ -6,6 +6,10 @@ import numpy as np
 class QueryHandler:
     """
     This class is used to handle the given string query.
+
+    Attributes
+    ----------
+
     """
     def __init__(self, stemmer: Callable, ii) -> None:
         """
@@ -18,6 +22,14 @@ class QueryHandler:
     def rotate(self, wildcard: str) -> tuple[str, bool]:
         """
         Function to rotate the string query. 
+
+        Args
+        ---- 
+            wildcard    : query term input by user
+        
+        Returns
+        -------
+
         """
         term = '$' + wildcard
         for i, l in enumerate(term, 1):
@@ -29,6 +41,15 @@ class QueryHandler:
     def union(self, p1: list, p2: list) -> list:
         """
         Method to find the OR of the two lists p1 and p2.
+
+        Args
+        ---- 
+            p1  : First posting list
+            p2  : Second posting list
+
+        Returns
+        ------- 
+            res : list cotaining the OR of lists p1 and p2
         """
         res = set()
         res = (set(p1) | set(p2))
@@ -36,14 +57,32 @@ class QueryHandler:
 
     def inverse(self, p1:list) -> list:
         """
-        Method to find the NOT of the given list p1. 
+        Method to find the NOT of the given list p1.
+        
+        Args
+        ---- 
+            p1      : posting list to be inverted
+            total   : the number of documents in corpus
+
+        Returns
+        -------
+
         """
         return [i for i in list(self.ii.id_to_file.keys()) if i not in p1]
     
     def intersection(self, p1: list, p2: list) -> list:
         """
         Method to find the AND of the two lists p1 and p2.
-        """        
+
+        Args
+        ----
+            p1  : First posting list
+            p2  : Second posting list
+
+        Returns
+        -------
+            res : List containing the AND of p1 and p2
+        """
         res = set()
         res = (set(p1) & set(p2))
         return list(res)
@@ -51,6 +90,15 @@ class QueryHandler:
     def and_not(self, p1: list, p2: list) -> list:
         """
         Method to find p1 AND NOT p2.
+
+        Args
+        ----
+            p1  : First posting list
+            p2  : Second posting list
+
+        Returns
+        -------
+            res : list cotaining the result 'p1 AND NOT p2'
         """
         i = j = 0
         res = []
@@ -72,17 +120,36 @@ class QueryHandler:
     def or_not(self, p1: list, p2: list) -> list:
         """
         Method to find p1 OR NOT p2.
-        """     
+
+        Args
+        ---- 
+            p1      : First posting list
+            p2      : Second posting list
+            total   : the number of documents in corpus
+
+        Returns
+        -------
+
+        """    
         return self.union(p1, self.inverse(p2))
     
     def levenshtein_distance(self, word1: str, word2: str) -> int:
         """
         Method to calculate the edit distance between word1 and word2.
+
+        Args
+        ----
+            word1   : First word
+            word2   : Second word
+
+        Returns
+        -------
+
         """
         m = np.zeros((len(word1)+1, len(word2)+1))
-        for j in range(len(word1)+1):
+        for j in range(len(word2)+1):
             m[0][j] = j
-        for i in range(len(word2)+1):
+        for i in range(len(word1)+1):
             m[i][0] = i
 
         for i in range(1, len(word1)+1):
@@ -96,6 +163,15 @@ class QueryHandler:
     def spell_correct(self, misspelled: str) -> str:
         """
         Method to get corrected spelling for a misspelled query word.
+
+        Args
+        ----
+            misspelled  : string query term entered by user
+            ii          : inverted index
+
+        Returns
+        -------
+
         """
         twograms = []
         for i in range(len(misspelled) - 1):
@@ -155,7 +231,7 @@ class QueryHandler:
                     
         if not is_wild and not res: # misspelled word
             corrected = self.spell_correct(term)
-            # print(term + " is corrected to " + corrected)
+            print(term + " is corrected to " + corrected)
             if corrected:
                 return self.match(corrected)
         
@@ -164,6 +240,16 @@ class QueryHandler:
     def evaluate_expr(self, expr: str, i: int) -> str:
         """
         Method to evaluate boolean expression and output result of the query.
+
+        Args
+        ----
+            expr    : given boolean expression to be evaluated
+            i       : 
+            ii      : inverted index 
+
+        Returns
+        -------
+
         """
         # print("evaluating " + expr + " and storing as @" + str(i))
         # Possibilities are:
@@ -208,7 +294,15 @@ class QueryHandler:
     def compute(self, query: str) -> list:
         """
         Method to evaluate precedence of brackets implemented using stacks.
-        @Pranav Balaji
+
+        Args
+        ----
+            query   : input string query
+            ii      : inverted index
+
+        Returns
+        -------
+
         """
         stack = []
         self.symbols = {}
