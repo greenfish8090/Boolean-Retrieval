@@ -6,17 +6,27 @@ from nltk.tokenize import sent_tokenize, word_tokenize
 
 class InvertedIndex:
     """
-    This class will make the Inverted Index. 
+    A class to make the inverted index.
+    
+    ...
+    
+    Attributes
+    ----------
+    directory : str
+        path to the dataset directory
+    stopwords : list
+        set of stopwords
+    stemmer : function
+        stemming function
+    
     """
-    def __init__(self, directory, stopwords, stemmer, save=True, name='ii'):
+    def __init__(self, directory, stopwords, stemmer):
         """
         Function Constructor
         """
         self.directory = directory
         self.stopwords = stopwords
         self.stemmer = stemmer
-        self.save = save
-        self.name = name
         self.id_to_file = {}
         self.index = defaultdict(lambda: {'count': 0, 'words': set()}) # stemmed index
         self.windex = defaultdict(lambda: {'count': 0, 'postings': set(), 'rotations':set()}) # word index
