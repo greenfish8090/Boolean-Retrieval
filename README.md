@@ -20,7 +20,7 @@ Valid boolean operators are **AND**, **OR** and **NOT** and are not case sensiti
 #### Wildcard Queries
 Only single wildcard queries are supported. <br>
 ```
-(Brut&ast; AND Ant&ast;ny) OR &ast;purnia
+(Brut* AND Ant*ny) OR *purnia
 ```
 
 
