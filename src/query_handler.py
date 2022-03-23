@@ -5,6 +5,10 @@ import numpy as np
 class QueryHandler:
     """
     This class is used to handle the given string query.
+
+    Attributes
+    ----------
+
     """
     def __init__(self, stemmer):
         """
@@ -16,6 +20,14 @@ class QueryHandler:
     def rotate(self, wildcard):
         """
         Function to rotate the string query. 
+
+        Args
+        ---- 
+            wildcard    : query term input by user
+        
+        Returns
+        -------
+
         """
         term = '$' + wildcard
         for i, l in enumerate(term, 1):
@@ -27,6 +39,15 @@ class QueryHandler:
     def union(self, p1, p2):
         """
         Method to find the OR of the two lists p1 and p2.
+
+        Args
+        ---- 
+            p1  : First posting list
+            p2  : Second posting list
+
+        Returns
+        ------- 
+            res : list cotaining the OR of lists p1 and p2
         """
         res = set()
         res = (set(p1) | set(p2))
@@ -34,13 +55,31 @@ class QueryHandler:
 
     def inverse(self, p1, total):
         """
-        Method to find the NOT of the given list p1. 
+        Method to find the NOT of the given list p1.
+        
+        Args
+        ---- 
+            p1      : posting list to be inverted
+            total   : the number of documents in corpus
+
+        Returns
+        -------
+
         """
         return [i for i in total if i not in p1]
     
     def intersection(self, p1, p2):
         """
         Method to find the AND of the two lists p1 and p2.
+
+        Args
+        ----
+            p1  : First posting list
+            p2  : Second posting list
+
+        Returns
+        -------
+            res : List containing the AND of p1 and p2
         """
         res = set()
         res = (set(p1) & set(p2))
@@ -49,6 +88,15 @@ class QueryHandler:
     def and_not(self, p1, p2):
         """
         Method to find p1 AND NOT p2.
+
+        Args
+        ----
+            p1  : First posting list
+            p2  : Second posting list
+
+        Returns
+        -------
+            res : list cotaining the result 'p1 AND NOT p2'
         """
         i = j = 0
         res = []
@@ -70,12 +118,31 @@ class QueryHandler:
     def or_not(self, p1, p2, total):
         """
         Method to find p1 OR NOT p2.
+
+        Args
+        ---- 
+            p1      : First posting list
+            p2      : Second posting list
+            total   : the number of documents in corpus
+
+        Returns
+        -------
+
         """    
         return self.union(p1, self.inverse(p2, total))
     
     def levenshtein_distance(self, word1, word2):
         """
         Method to calculate the edit distance between word1 and word2.
+
+        Args
+        ----
+            word1   : First word
+            word2   : Second word
+
+        Returns
+        -------
+
         """
         m = np.zeros((len(word1)+1, len(word2)+1))
         for j in range(len(word1)+1):
@@ -94,6 +161,15 @@ class QueryHandler:
     def spell_correct(self, misspelled, ii):
         """
         Method to get corrected spelling for a misspelled query word.
+
+        Args
+        ----
+            misspelled  : string query term entered by user
+            ii          : inverted index
+
+        Returns
+        -------
+
         """
         twograms = []
         for i in range(len(misspelled) - 1):
@@ -162,6 +238,16 @@ class QueryHandler:
     def evaluate_expr(self, expr, i, ii):
         """
         Method to evaluate boolean expression and output result of the query.
+
+        Args
+        ----
+            expr    : given boolean expression to be evaluated
+            i       : 
+            ii      : inverted index 
+
+        Returns
+        -------
+
         """
         # print("evaluating " + expr + " and storing as @" + str(i))
         # Possibilities are:
@@ -206,7 +292,15 @@ class QueryHandler:
     def compute(self, query, ii):
         """
         Method to evaluate precedence of brackets implemented using stacks.
-        @Pranav Balaji
+
+        Args
+        ----
+            query   : input string query
+            ii      : inverted index
+
+        Returns
+        -------
+
         """
         stack = []
         self.symbols = {}
