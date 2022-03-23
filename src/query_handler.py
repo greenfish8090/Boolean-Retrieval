@@ -1,14 +1,15 @@
 import collections
 from collections import defaultdict
+from typing import Callable
 import numpy as np
-
+from inverted_index import InvertedIndex
 
 class QueryHandler:
-    def __init__(self, stemmer):
+    def __init__(self, stemmer: Callable) -> None:
         self.symbols = {}
         self.stemmer = stemmer
     
-    def rotate(self, wildcard):
+    def rotate(self, wildcard: str) -> tuple[str, bool]:
         term = '$' + wildcard
         for i, l in enumerate(term, 1):
             if l == "*":
@@ -16,20 +17,20 @@ class QueryHandler:
         else:
             return wildcard, False
         
-    def union(self, p1, p2):
+    def union(self, p1: list, p2: list) -> list:
         res = set()
         res = (set(p1) | set(p2))
         return list(res)
 
-    def inverse(self, p1, total):
+    def inverse(self, p1:list, total:list) -> list:
         return [i for i in total if i not in p1]
     
-    def intersection(self, p1, p2):
+    def intersection(self, p1: list, p2: list) -> list:
         res = set()
         res = (set(p1) & set(p2))
         return list(res)
     
-    def and_not(self, p1, p2):
+    def and_not(self, p1: list, p2: list) -> list:
         i = j = 0
         res = []
 
@@ -47,10 +48,10 @@ class QueryHandler:
 
         return res
     
-    def or_not(self, p1, p2, total):    
+    def or_not(self, p1: list, p2: list, total: list) -> list:    
         return self.union(p1, self.inverse(p2, total))
     
-    def levenshtein_distance(self, word1, word2):
+    def levenshtein_distance(self, word1: str, word2: str) -> int:
         m = np.zeros((len(word1)+1, len(word2)+1))
         for j in range(len(word1)+1):
             m[0][j] = j
@@ -63,9 +64,9 @@ class QueryHandler:
                     m[i, j] = m[i-1, j-1]
                 else:
                     m[i, j] = 1 + min(m[i-1, j], min(m[i, j-1], m[i-1, j-1]))
-        return m[len(word1), len(word2)]
+        return int(m[len(word1), len(word2)])
     
-    def spell_correct(self, misspelled, ii):
+    def spell_correct(self, misspelled: str, ii: InvertedIndex) -> str:
         twograms = []
         for i in range(len(misspelled) - 1):
             twograms += ii.tgi[misspelled[i:i+2]]
@@ -96,7 +97,7 @@ class QueryHandler:
         return max([(ii.index[x]['count'], x) for x in ed[min(list(ed.keys()))]])[1]
         
     
-    def match(self, term, ii):
+    def match(self, term: str, ii: InvertedIndex) -> list:
         if term[0] == '@':
             return self.symbols[term]
         res = []
@@ -111,7 +112,7 @@ class QueryHandler:
                                 res = self.union(res, ii.windex[w]['postings'])
                                 break
         else: # not a wildcard
-            rotated = self.stemmer.stem(rotated)
+            rotated = self.stemmer(rotated)
             for i in ii.index.keys():
                 if i == rotated:
                     for w in ii.index[i]['words']:
@@ -127,7 +128,7 @@ class QueryHandler:
         
         return list(res)
     
-    def evaluate_expr(self, expr, i, ii):
+    def evaluate_expr(self, expr: str, i: int, ii: InvertedIndex) -> str:
         # print("evaluating " + expr + " and storing as @" + str(i))
         # Possibilities are:
         # var or not var
@@ -168,7 +169,7 @@ class QueryHandler:
                     self.symbols[new_symbol] = self.union(self.match(expr[0], ii), self.match(expr[2], ii))
                     return new_symbol
             
-    def compute(self, query, ii):
+    def compute(self, query: str, ii: InvertedIndex) -> list:
         stack = []
         self.symbols = {}
         i = 0
