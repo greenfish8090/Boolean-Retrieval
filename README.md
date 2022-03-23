@@ -15,7 +15,7 @@ Valid boolean operators are AND, OR and NOT and are not case sensitive. Every tw
 > Eg. (Brutus OR Calpurnia) OR NOT Anthony
 #### Wildcard Queries
 Single wildcard queries are supported. <br>
-> Eg. (Brut&ast AND Ant&astny) OR &astpurnia
+> Eg. (Brut&ast;AND Ant&ast;ny) OR &ast;purnia
 
 
 
