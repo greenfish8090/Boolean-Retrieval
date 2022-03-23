@@ -5,25 +5,27 @@ import numpy as np
 from nltk.tokenize import sent_tokenize, word_tokenize
 
 class InvertedIndex:
-    """
-    A class to make the inverted index.
-    
-    ...
+    """A class to make the inverted index.
     
     Attributes
     ----------
-    directory : str
-        path to the dataset directory
-    stopwords : list
-        set of stopwords
-    stemmer : function
-        stemming function
-    
+        directory   : path to the dataset directory
+        stopwords   : set of stopwords
+        stemmer     : stemming function
+
     """
+
     def __init__(self, directory, stopwords, stemmer):
+        """Class constructor.
+
+        Args
+        ----
+            directory   : path to the dataset directory
+            stopwords   : set of stopwords
+            stemmer     : stemming function
+
         """
-        Function Constructor
-        """
+
         self.directory = directory
         self.stopwords = stopwords
         self.stemmer = stemmer
@@ -35,9 +37,18 @@ class InvertedIndex:
         self.construct_tgi()
         
     def produce_rotations(self, word):
+        """Method to generate all rotations of a word.
+
+        Args
+        ----
+            word    : word to make generate rotations for
+
+        Returns
+        -------
+            res     : a list of all word rotations
+
         """
-        Method to rotate word and find all its permutations.
-        """
+
         term = "$" + word
         res = [term]
         for i in range(len(word) - 1):
@@ -47,8 +58,10 @@ class InvertedIndex:
     
     def construct(self):
         """
-        Method used to create the inverted index.
+        Method to construct the inverted index.
+
         """
+
         for i, filename in enumerate(os.listdir(self.directory)):
             self.id_to_file[i] = filename
             with open(os.path.join(self.directory, filename), 'rt') as original:
@@ -74,8 +87,10 @@ class InvertedIndex:
 
     def construct_tgi(self):
         """
-        Method to create stems and store them.
+        Method to construct two-gram index.
+
         """
+        
         for i in self.index.keys():
             for j in self.index[i]['words']:
                 for k in range(len(j) - 1):
