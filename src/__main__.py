@@ -12,7 +12,8 @@ from query_handler import QueryHandler
 def main():
     # Instantiate the stemmer and download the relevant nltk modules
     ps = PorterStemmer()
-    nltk.download()
+
+    # nltk.download()
 
     # Check if the inverted index table already exists
     if os.path.exists(os.path.join(os.path.abspath(os.path.dirname(os.path.dirname( __file__ ))), 'Saved', 'ii.pkl')):
@@ -27,7 +28,7 @@ def main():
             dill.dump(ii, out, dill.HIGHEST_PROTOCOL)
 
     # Instantiate the query handler
-    qh = QueryHandler(stemmer = ps.stem)
+    qh = QueryHandler(stemmer = ps.stem, ii = ii)
 
     # Until user types exit, keep evaluating queries
     while(True):
@@ -36,7 +37,7 @@ def main():
         if query == "EXIT":
             break
 
-        result = [ii.id_to_file[i] for i in qh.compute(query, ii)]
+        result = [ii.id_to_file[i] for i in qh.compute(query)]
         print(str(len(result)) + "/" + str(len(ii.id_to_file)) + " matches:")
         print(result)
 

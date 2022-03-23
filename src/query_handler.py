@@ -2,18 +2,18 @@ import collections
 from collections import defaultdict
 from typing import Callable
 import numpy as np
-from inverted_index import InvertedIndex
 
 class QueryHandler:
     """
     This class is used to handle the given string query.
     """
-    def __init__(self, stemmer: Callable) -> None:
+    def __init__(self, stemmer: Callable, ii) -> None:
         """
         Function Constructor
         """
         self.symbols = {}
         self.stemmer = stemmer
+        self.ii = ii
     
     def rotate(self, wildcard: str) -> tuple[str, bool]:
         """
@@ -34,11 +34,11 @@ class QueryHandler:
         res = (set(p1) | set(p2))
         return list(res)
 
-    def inverse(self, p1:list, total:list) -> list:
+    def inverse(self, p1:list) -> list:
         """
         Method to find the NOT of the given list p1. 
         """
-        return [i for i in total if i not in p1]
+        return [i for i in list(self.ii.id_to_file.keys()) if i not in p1]
     
     def intersection(self, p1: list, p2: list) -> list:
         """
@@ -69,11 +69,11 @@ class QueryHandler:
 
         return res
     
-    def or_not(self, p1: list, p2: list, total: list) -> list:
+    def or_not(self, p1: list, p2: list) -> list:
         """
         Method to find p1 OR NOT p2.
         """     
-        return self.union(p1, self.inverse(p2, total))
+        return self.union(p1, self.inverse(p2))
     
     def levenshtein_distance(self, word1: str, word2: str) -> int:
         """
@@ -93,13 +93,13 @@ class QueryHandler:
                     m[i, j] = 1 + min(m[i-1, j], min(m[i, j-1], m[i-1, j-1]))
         return int(m[len(word1), len(word2)])
     
-    def spell_correct(self, misspelled: str, ii: InvertedIndex) -> str:
+    def spell_correct(self, misspelled: str) -> str:
         """
         Method to get corrected spelling for a misspelled query word.
         """
         twograms = []
         for i in range(len(misspelled) - 1):
-            twograms += ii.tgi[misspelled[i:i+2]]
+            twograms += self.ii.tgi[misspelled[i:i+2]]
         
         freqs = dict(collections.Counter(twograms)) # stem : no. of matching two-grams
         freqs = {k: v for k, v in reversed(sorted(freqs.items(), key=lambda item: item[1]))}
@@ -115,7 +115,7 @@ class QueryHandler:
         
         for f in list(ff.keys())[:1]: # top two-gram matching word
             for i in ff[f]: # for each stem with frequency f
-                for w in ii.index[i]['words']: # for each word in that stem
+                for w in self.ii.index[i]['words']: # for each word in that stem
                     if len(w)>=len(misspelled)-4 and len(w)<=len(misspelled)+4 : # if at most 4 chars away from misspelled word
                         d = self.levenshtein_distance(misspelled, w) # get distance
                         if d<=5: # if dist at most 5
@@ -124,10 +124,10 @@ class QueryHandler:
 
         if not ed:
             return ""
-        return max([(ii.index[x]['count'], x) for x in ed[min(list(ed.keys()))]])[1]
+        return max([(self.ii.index[x]['count'], x) for x in ed[min(list(ed.keys()))]])[1]
         
     
-    def match(self, term: str, ii: InvertedIndex) -> list:
+    def match(self, term: str) -> list:
         """
         @Pranav Balaji
         """
@@ -137,31 +137,31 @@ class QueryHandler:
         rotated, is_wild = self.rotate(term)
         #print(rotated)
         if is_wild: # is a wildcard
-            for i in ii.index.keys():
-                for w in ii.index[i]['words']:
+            for i in self.ii.index.keys():
+                for w in self.ii.index[i]['words']:
                     if len(w) >= len(term)-1:
-                        for r in ii.windex[w]['rotations']:
+                        for r in self.ii.windex[w]['rotations']:
                             if r[:len(rotated)] == rotated:
-                                res = self.union(res, ii.windex[w]['postings'])
+                                res = self.union(res, self.ii.windex[w]['postings'])
                                 break
         else: # not a wildcard
             rotated = self.stemmer(rotated)
-            for i in ii.index.keys():
+            for i in self.ii.index.keys():
                 if i == rotated:
-                    for w in ii.index[i]['words']:
+                    for w in self.ii.index[i]['words']:
                         res = set(res)
-                        res|= set(ii.windex[w]['postings'])
+                        res|= set(self.ii.windex[w]['postings'])
                     break
                     
         if not is_wild and not res: # misspelled word
-            corrected = self.spell_correct(term, ii)
+            corrected = self.spell_correct(term)
             # print(term + " is corrected to " + corrected)
             if corrected:
-                return self.match(corrected, ii)
+                return self.match(corrected)
         
         return list(res)
     
-    def evaluate_expr(self, expr: str, i: int, ii: InvertedIndex) -> str:
+    def evaluate_expr(self, expr: str, i: int) -> str:
         """
         Method to evaluate boolean expression and output result of the query.
         """
@@ -179,33 +179,33 @@ class QueryHandler:
         new_symbol = '@' + str(i)
 
         if expr[0] == "not":
-            self.symbols[new_symbol] = self.inverse(self.match(expr[1], ii), list(ii.id_to_file.keys()))
+            self.symbols[new_symbol] = self.inverse(self.match(expr[1]))
             return new_symbol
 
         else:
             if len(expr) == 1:
-                self.symbols[new_symbol] = self.match(expr[0], ii)
+                self.symbols[new_symbol] = self.match(expr[0])
                 return new_symbol
 
             if expr[1] == 'and':
                 if expr[2] == 'not':
-                    self.symbols[new_symbol] = self.and_not(self.match(expr[0], ii), self.match(expr[3], ii))
+                    self.symbols[new_symbol] = self.and_not(self.match(expr[0]), self.match(expr[3]))
                     return new_symbol
 
                 else:
-                    self.symbols[new_symbol] = self.intersection(self.match(expr[0], ii), self.match(expr[2], ii))
+                    self.symbols[new_symbol] = self.intersection(self.match(expr[0]), self.match(expr[2]))
                     return new_symbol
 
             else:
                 if expr[2] == 'not':
-                    self.symbols[new_symbol] = self.or_not(self.match(expr[0], ii), self.match(expr[3], ii), list(ii.id_to_file.keys()))
+                    self.symbols[new_symbol] = self.or_not(self.match(expr[0]), self.match(expr[3]))
                     return new_symbol
 
                 else:
-                    self.symbols[new_symbol] = self.union(self.match(expr[0], ii), self.match(expr[2], ii))
+                    self.symbols[new_symbol] = self.union(self.match(expr[0]), self.match(expr[2]))
                     return new_symbol
             
-    def compute(self, query: str, ii: InvertedIndex) -> list:
+    def compute(self, query: str) -> list:
         """
         Method to evaluate precedence of brackets implemented using stacks.
         @Pranav Balaji
@@ -223,10 +223,10 @@ class QueryHandler:
                     if char != '(':
                         expr += char
                     else:
-                        stack += list(self.evaluate_expr(expr[::-1], i, ii))
+                        stack += list(self.evaluate_expr(expr[::-1], i))
                         i += 1
                         break
         if stack:
-            self.evaluate_expr("".join(stack), i, ii)
+            self.evaluate_expr("".join(stack), i)
             i += 1
         return self.symbols['@' + str(i - 1)]
