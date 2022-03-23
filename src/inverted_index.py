@@ -16,7 +16,7 @@ class InvertedIndex:
 
     """
 
-        def __init__(self, directory: str, stopwords: list, stemmer: Callable, save: bool = True, name: str = 'ii') -> None:
+    def __init__(self, directory: str, stopwords: list, stemmer: Callable, save: bool = True, name: str = 'ii') -> None:
         """Class constructor.
 
         Args
