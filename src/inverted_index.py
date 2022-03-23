@@ -26,7 +26,7 @@ class InvertedIndex:
         
     def produce_rotations(self, word):
         """
-        Rotate word and find all its permutations.
+        Method to rotate word and find all its permutations.
         """
         term = "$" + word
         res = [term]
@@ -37,7 +37,7 @@ class InvertedIndex:
     
     def construct(self):
         """
-        Function used to create the inverted index.
+        Method used to create the inverted index.
         """
         for i, filename in enumerate(os.listdir(self.directory)):
             self.id_to_file[i] = filename
@@ -64,7 +64,7 @@ class InvertedIndex:
 
     def construct_tgi(self):
         """
-        Function to create stems and store them.
+        Method to create stems and store them.
         """
         for i in self.index.keys():
             for j in self.index[i]['words']:

@@ -26,7 +26,7 @@ class QueryHandler:
 
     def union(self, p1, p2):
         """
-        This method find the OR of the two lists p1 and p2.
+        Method to find the OR of the two lists p1 and p2.
         """
         res = set()
         res = (set(p1) | set(p2))
@@ -34,13 +34,13 @@ class QueryHandler:
 
     def inverse(self, p1, total):
         """
-        Function to find the NOT of the given list p1. 
+        Method to find the NOT of the given list p1. 
         """
         return [i for i in total if i not in p1]
     
     def intersection(self, p1, p2):
         """
-        This method find the AND of the two lists p1 and p2.
+        Method to find the AND of the two lists p1 and p2.
         """
         res = set()
         res = (set(p1) & set(p2))
