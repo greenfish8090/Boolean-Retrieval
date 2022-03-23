@@ -21,17 +21,17 @@ def main():
 
     # If not, build it
     else:
-        print('Building inverted index table')
-        ii = InvertedIndex(stemmer = ps, directory = 'Datasets/Shakespeare', stopwords = stopwords.words('english'))
+        print('Building inverted index...')
+        ii = InvertedIndex(stemmer = ps.stem, directory = 'Datasets/Shakespeare', stopwords = stopwords.words('english'))
         with open(os.path.join('Saved', 'ii.pkl'), 'wb') as out:
             dill.dump(ii, out, dill.HIGHEST_PROTOCOL)
 
     # Instantiate the query handler
-    qh = QueryHandler(stemmer = ps)
+    qh = QueryHandler(stemmer = ps.stem)
 
     # Until user types exit, keep evaluating queries
     while(True):
-        query = input("Enter query: ")
+        query = input("\nEnter query: ")
 
         if query == "EXIT":
             break
