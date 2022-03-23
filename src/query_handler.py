@@ -80,9 +80,9 @@ class QueryHandler:
         Method to calculate the edit distance between word1 and word2.
         """
         m = np.zeros((len(word1)+1, len(word2)+1))
-        for j in range(len(word1)+1):
+        for j in range(len(word2)+1):
             m[0][j] = j
-        for i in range(len(word2)+1):
+        for i in range(len(word1)+1):
             m[i][0] = i
 
         for i in range(1, len(word1)+1):
