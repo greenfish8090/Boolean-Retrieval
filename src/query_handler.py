@@ -2,34 +2,54 @@ import collections
 from collections import defaultdict
 import numpy as np
 
-
 class QueryHandler:
+    """
+    This class is used to handle the given string query.
+    """
     def __init__(self, stemmer):
+        """
+        Function Constructor
+        """
         self.symbols = {}
         self.stemmer = stemmer
-    
+
     def rotate(self, wildcard):
+        """
+        Function to rotate the string query. 
+        """
         term = '$' + wildcard
         for i, l in enumerate(term, 1):
             if l == "*":
                 return term[i:] + term[:i-1], True
         else:
-            return wildcard, False
-        
+            return wildcard, False    
+
     def union(self, p1, p2):
+        """
+        This method find the OR of the two lists p1 and p2.
+        """
         res = set()
         res = (set(p1) | set(p2))
         return list(res)
 
     def inverse(self, p1, total):
+        """
+        Function to find the NOT of the given list p1. 
+        """
         return [i for i in total if i not in p1]
     
     def intersection(self, p1, p2):
+        """
+        This method find the AND of the two lists p1 and p2.
+        """
         res = set()
         res = (set(p1) & set(p2))
         return list(res)
     
     def and_not(self, p1, p2):
+        """
+        Method to find p1 AND NOT p2.
+        """
         i = j = 0
         res = []
 
@@ -47,10 +67,16 @@ class QueryHandler:
 
         return res
     
-    def or_not(self, p1, p2, total):    
+    def or_not(self, p1, p2, total):
+        """
+        Method to find p1 OR NOT p2.
+        """    
         return self.union(p1, self.inverse(p2, total))
     
     def levenshtein_distance(self, word1, word2):
+        """
+        Method to calculate the edit distance between word1 and word2.
+        """
         m = np.zeros((len(word1)+1, len(word2)+1))
         for j in range(len(word1)+1):
             m[0][j] = j
@@ -66,6 +92,9 @@ class QueryHandler:
         return m[len(word1), len(word2)]
     
     def spell_correct(self, misspelled, ii):
+        """
+        Method to get corrected spelling for a misspelled query word.
+        """
         twograms = []
         for i in range(len(misspelled) - 1):
             twograms += ii.tgi[misspelled[i:i+2]]
@@ -97,6 +126,9 @@ class QueryHandler:
         
     
     def match(self, term, ii):
+        """
+        @Pranav Balaji
+        """
         if term[0] == '@':
             return self.symbols[term]
         res = []
@@ -128,6 +160,9 @@ class QueryHandler:
         return list(res)
     
     def evaluate_expr(self, expr, i, ii):
+        """
+        Method to evaluate boolean expression and output result of the query.
+        """
         # print("evaluating " + expr + " and storing as @" + str(i))
         # Possibilities are:
         # var or not var
@@ -169,6 +204,10 @@ class QueryHandler:
                     return new_symbol
             
     def compute(self, query, ii):
+        """
+        Method to evaluate precedence of brackets implemented using stacks.
+        @Pranav Balaji
+        """
         stack = []
         self.symbols = {}
         i = 0

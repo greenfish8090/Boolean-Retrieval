@@ -5,7 +5,13 @@ import numpy as np
 from nltk.tokenize import sent_tokenize, word_tokenize
 
 class InvertedIndex:
+    """
+    This class will make the Inverted Index. 
+    """
     def __init__(self, directory, stopwords, stemmer, save=True, name='ii'):
+        """
+        Function Constructor
+        """
         self.directory = directory
         self.stopwords = stopwords
         self.stemmer = stemmer
@@ -19,6 +25,9 @@ class InvertedIndex:
         self.construct_tgi()
         
     def produce_rotations(self, word):
+        """
+        Rotate word and find all its permutations.
+        """
         term = "$" + word
         res = [term]
         for i in range(len(word) - 1):
@@ -27,6 +36,9 @@ class InvertedIndex:
         return res
     
     def construct(self):
+        """
+        Function used to create the inverted index.
+        """
         for i, filename in enumerate(os.listdir(self.directory)):
             self.id_to_file[i] = filename
             with open(os.path.join(self.directory, filename), 'rt') as original:
@@ -51,6 +63,9 @@ class InvertedIndex:
             self.index[t]['count'] = len(postings)
 
     def construct_tgi(self):
+        """
+        Function to create stems and store them.
+        """
         for i in self.index.keys():
             for j in self.index[i]['words']:
                 for k in range(len(j) - 1):
