@@ -195,7 +195,7 @@ class QueryHandler:
                     if len(w)>=len(misspelled)-4 and len(w)<=len(misspelled)+4 : # if at most 4 chars away from misspelled word
                         d = self.levenshtein_distance(misspelled, w) # get distance
                         if d<=5: # if dist at most 5
-                            ed[d].add(i) # add stem
+                            ed[d].add(w) # add word
         # print(ed)
 
         if not ed:
